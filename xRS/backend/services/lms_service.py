@@ -59,8 +59,6 @@ class LatencyMonitoringService:
         
         with self.lock:
             self.latency_rings = dict(latency_ring)
-        
-        return latency_ring
 
     def get_latency_ring(self, rtt):
         for ring, latency in self.latency_rings_config.items():
@@ -68,7 +66,7 @@ class LatencyMonitoringService:
                 return ring
         return "Ring4"
     
-    def monitor_loop(self):
+    def monitor_loop(self, interval=30):
         while True:
             self.calculate_ring_rtt()
-            time.sleep(30)
+            time.sleep(interval)
