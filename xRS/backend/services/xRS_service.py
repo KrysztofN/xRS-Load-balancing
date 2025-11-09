@@ -36,6 +36,10 @@ class xRSService:
             "Ring4": 0
         }
 
+        if not server_loads:
+            routing_table["Ring1"] = 100
+            return routing_table
+
         loads = self.calculate_ring_load(latency_rings, server_loads)
 
         ring1_load = loads.get("Ring1", 0)
@@ -70,7 +74,7 @@ class xRSService:
         with self.lock:
             return self.routing_table.copy()
     
-    def monitor_loop(self, lms, server_data: Dict, interval: int = 30):
+    def monitor_loop(self, lms, server_data: Dict, interval: int = 5):
         while True:
             try:
                 latency_rings = lms.get_latency_rings()
