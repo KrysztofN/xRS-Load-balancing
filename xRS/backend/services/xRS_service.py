@@ -1,29 +1,34 @@
-from threading import Lock
+from threading import Lock, Thread
 from typing import Dict, List
 from collections import defaultdict
+import time
 
 class xRSService:
-    def __init__(self):
+    def __init__(self, latency_rings_threshold: Dict[str, float]):
         self.routing_table = {}
+        self.latency_rings_threshold = latency_rings_threshold
         self.lock = Lock()
     
-    def calculate_ring_load(self, latency_rings: Dict[List], server_loads: Dict) -> Dict[float]:
+    def calculate_ring_load(self, latency_rings: Dict[str, List[str]], server_loads: Dict) -> Dict[str, float]:
         loads = defaultdict(float)
+        
         for ring, server_list in latency_rings.items():
             server_count = 0
-            cumulative_load = 0
+            cumulative_load = 0.0
+            
             for server_ip in server_list:
                 if server_ip in server_loads:
                     server_count += 1
                     cumulative_load += server_loads[server_ip]['cpu']
+            
             if server_count > 0:
-                loads[ring] = cumulative_load/server_count
+                loads[ring] = cumulative_load / server_count
             else:
                 loads[ring] = 0.0
         
-        return loads
+        return dict(loads)
 
-    def createRoutingTable(self, latency_rings: Dict[str, List[str]], server_loads: Dict, latency_rings_threshold: Dict[str, int]) -> Dict[str, int]:
+    def createRoutingTable(self, latency_rings: Dict[str, List[str]], server_loads: Dict) -> Dict[str, int]:
         routing_table = {
             "Ring1": 0,
             "Ring2": 0,
@@ -37,9 +42,9 @@ class xRSService:
         ring2_load = loads.get("Ring2", 0)
         ring3_load = loads.get("Ring3", 0)
 
-        ring1_threshold = latency_rings_threshold.get("Ring1", 0)
-        ring2_threshold = latency_rings_threshold.get("Ring2", 0)
-        ring3_threshold = latency_rings_threshold.get("Ring3", 0)
+        ring1_threshold = self.latency_rings_threshold.get("Ring1", 0)
+        ring2_threshold = self.latency_rings_threshold.get("Ring2", 0)
+        ring3_threshold = self.latency_rings_threshold.get("Ring3", 0)
 
         if ring1_load < ring1_threshold:
             routing_table["Ring1"] = 100
@@ -64,7 +69,14 @@ class xRSService:
     def get_routing_table(self) -> Dict[str, int]:
         with self.lock:
             return self.routing_table.copy()
-        
-
-
-        
+    
+    def monitor_loop(self, lms, server_data: Dict, interval: int = 30):
+        while True:
+            try:
+                latency_rings = lms.get_latency_rings()
+                self.createRoutingTable(latency_rings, server_data)
+                
+            except Exception as e:
+                print(f"Error in xRS monitoring loop: {e}")
+            
+            time.sleep(interval)
