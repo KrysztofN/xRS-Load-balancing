@@ -1,0 +1,51 @@
+┌─────────────────────────────────────────────────────────────┐
+│                    CONTROL PLANE                            │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Latency Monitoring Service (LMS)                    │   │
+│  │  - Periodically pings all servers                    │   │
+│  │  - Measures RTT (Round-Trip Time)                    │   │
+│  │  - Builds latency matrix                             │   │
+│  │  - Sends matrix to xRS every 60 seconds              │   │
+│  └─────────────────────┬────────────────────────────────┘   │
+│                        │                                    │
+│                        ▼                                    │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Cross-Region Routing Service (xRS)                  │   │
+│  │  - Receives latency matrix from LMS                  │   │
+│  │  - Polls servers for CPU load every 10 seconds       │   │
+│  │  - Computes routing table based on:                  │   │
+│  │    • Latency (from LMS)                              │   │
+│  │    • Load (from servers)                             │   │
+│  │    • Ring thresholds                                 │   │
+│  │  - Exposes API: GET /routing-table                   │   │
+│  └─────────────────────┬────────────────────────────────┘   │
+│                        │                                    │
+└────────────────────────┼────────────────────────────────────┘
+                         │
+                         ▼ Routing Table
+┌─────────────────────────────────────────────────────────────┐
+│                    DATA PLANE                               │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Load Generator                                      │   │
+│  │  - Fetches routing table from xRS every 10s          │   │ 
+│  │  - Generates RPC requests                            │   │
+│  │  - Routes based on routing table percentages         │   │
+│  │  - Uses Pick-2 within selected AZ                    │   │
+│  └─────────────────────┬────────────────────────────────┘   │
+│                        │                                    │
+│                        ▼ RPC Requests                       │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Application Servers                                 │   │
+│  │  - Process requests                                  │   │
+│  │  - Report CPU load to xRS                            │   │
+│  │  - Respond to LMS pings                              │   │ 
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+
+
+notes:
+ssh to machine: $ ssh -i my-loadbalancer-key.pem ec2-user@54.90.177.6
+
+przetestować reportowanie loadu!!!
