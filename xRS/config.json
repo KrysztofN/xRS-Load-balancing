@@ -1,0 +1,14 @@
+{
+    "Servers_config" : ["172.31.21.109"],
+    "Latency_rings_config" : {
+        "Ring1": 5,
+        "Ring2": 35,
+        "Ring3": 80
+    },
+    "Latency_rings_threshold" : {
+        "Ring1": 2,
+        "Ring2": 5,
+        "Ring3": 8
+    },
+    "xRS_url" : "http://172.31.26.111:5000"
+}

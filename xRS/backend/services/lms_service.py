@@ -65,6 +65,10 @@ class LatencyMonitoringService:
             if rtt < latency:
                 return ring
         return "Ring4"
+
+    def get_latency_rings(self)-> Dict:
+        with self.lock:
+            return self.latency_rings.copy()
     
     def monitor_loop(self, interval=30):
         while True:

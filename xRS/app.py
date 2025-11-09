@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from backend import services
 import json
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -14,7 +15,8 @@ latency_rings_threshold = data["Latency_rings_threshold"]
 xRS_url = data["xRS_url"]
 
 lms = services.LatencyMonitoringService(servers_config, latency_rings_config, xRS_url)
-lms.monitor_loop(interval=30)
+monitoring_thread = Thread(target=lms.monitor_loop, args=(30,), daemon=True)
+monitoring_thread.start()
 
 @app.route('/report', methods=['POST'])
 def report_load():

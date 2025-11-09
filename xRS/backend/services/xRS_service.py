@@ -1,0 +1,70 @@
+from threading import Lock
+from typing import Dict, List
+from collections import defaultdict
+
+class xRSService:
+    def __init__(self):
+        self.routing_table = {}
+        self.lock = Lock()
+    
+    def calculate_ring_load(self, latency_rings: Dict[List], server_loads: Dict) -> Dict[float]:
+        loads = defaultdict(float)
+        for ring, server_list in latency_rings.items():
+            server_count = 0
+            cumulative_load = 0
+            for server_ip in server_list:
+                if server_ip in server_loads:
+                    server_count += 1
+                    cumulative_load += server_loads[server_ip]['cpu']
+            if server_count > 0:
+                loads[ring] = cumulative_load/server_count
+            else:
+                loads[ring] = 0.0
+        
+        return loads
+
+    def createRoutingTable(self, latency_rings: Dict[str, List[str]], server_loads: Dict, latency_rings_threshold: Dict[str, int]) -> Dict[str, int]:
+        routing_table = {
+            "Ring1": 0,
+            "Ring2": 0,
+            "Ring3": 0,
+            "Ring4": 0
+        }
+
+        loads = self.calculate_ring_load(latency_rings, server_loads)
+
+        ring1_load = loads.get("Ring1", 0)
+        ring2_load = loads.get("Ring2", 0)
+        ring3_load = loads.get("Ring3", 0)
+
+        ring1_threshold = latency_rings_threshold.get("Ring1", 0)
+        ring2_threshold = latency_rings_threshold.get("Ring2", 0)
+        ring3_threshold = latency_rings_threshold.get("Ring3", 0)
+
+        if ring1_load < ring1_threshold:
+            routing_table["Ring1"] = 100
+        elif ring2_load < ring2_threshold:
+            routing_table["Ring1"] = 70
+            routing_table["Ring2"] = 30
+        elif ring3_load < ring3_threshold:
+            routing_table["Ring1"] = 50
+            routing_table["Ring2"] = 30
+            routing_table["Ring3"] = 20
+        else:
+            routing_table["Ring1"] = 40
+            routing_table["Ring2"] = 30
+            routing_table["Ring3"] = 20
+            routing_table["Ring4"] = 10
+        
+        with self.lock:
+            self.routing_table = routing_table
+
+        return routing_table
+
+    def get_routing_table(self) -> Dict[str, int]:
+        with self.lock:
+            return self.routing_table.copy()
+        
+
+
+        
