@@ -33,7 +33,7 @@ def main():
     
     while True:
         cpu_load = get_cpu_load()
-        report_to_xrs(cpu_load)
+        report_to_xrs(cpu_load, xRS_url)
         time.sleep(report_interval)
 
 if __name__ == '__main__':
