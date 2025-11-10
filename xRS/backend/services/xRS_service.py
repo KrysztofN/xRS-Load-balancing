@@ -1,7 +1,9 @@
 from threading import Lock, Thread
 from typing import Dict, List
 from collections import defaultdict
+from datetime import datetime
 import time
+import csv
 
 class xRSService:
     def __init__(self, latency_rings_threshold: Dict[str, float]):
@@ -42,6 +44,8 @@ class xRSService:
 
         loads = self.calculate_ring_load(latency_rings, server_loads)
 
+        self.save_load_data(loads, server_loads)
+
         ring1_load = loads.get("Ring1", 0)
         ring2_load = loads.get("Ring2", 0)
         ring3_load = loads.get("Ring3", 0)
@@ -74,12 +78,29 @@ class xRSService:
         with self.lock:
             return self.routing_table.copy()
     
-    def monitor_loop(self, lms, server_data: Dict, interval: int = 5):
+    def save_load_data(self, loads: Dict[str, float], server_loads: Dict):
+        
+        timestamp = datetime.now().isoformat()
+
+        with open('ring_loads.csv', 'a', newline='') as csv_file:  
+            writer = csv.writer(csv_file)
+            if csv_file.tell() == 0:
+                writer.writerow(['ring', 'load', 'timestamp'])
+            for key, value in loads.items():
+                writer.writerow([key, value, timestamp])
+        
+        with open('server_loads.csv', 'a', newline='') as csv_file:  
+            writer = csv.writer(csv_file)
+            if csv_file.tell() == 0:
+                writer.writerow(['server_ip', 'load', 'timestamp'])
+            for key, value in server_loads.items():
+                writer.writerow([key, value['cpu'], timestamp])
+    
+    def monitor_loop(self, lms, server_data: Dict, interval: int = 1):
         while True:
             try:
                 latency_rings = lms.get_latency_rings()
                 self.createRoutingTable(latency_rings, server_data)
-                
             except Exception as e:
                 print(f"Error in xRS monitoring loop: {e}")
             
