@@ -1,4 +1,4 @@
 {
     "xRS_url" : "http://172.31.26.111:5000/report",
-    "report_interval" : 5  
+    "report_interval" : 0.5  
 }

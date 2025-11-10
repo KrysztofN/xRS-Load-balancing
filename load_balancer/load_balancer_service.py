@@ -16,7 +16,7 @@ class LoadBalancer:
 
     def get_routing_table(self):
         try:
-            response = requests.get(self.xrs_url + '/routing', timeout=5)
+            response = requests.get(self.xrs_url + '/routing-table', timeout=5)
             response.raise_for_status()
             self.routing_table = response.json()
         except Exception as e:
@@ -111,5 +111,11 @@ if __name__ == "__main__":
     update_thread = Thread(target=lb.update_loop, args=(1,), daemon=True)
     update_thread.start()
     
-    request_thread = Thread(target=lb.request_loop, args=(1,), daemon=True)
+    request_thread = Thread(target=lb.request_loop, args=(0.01,), daemon=True)
     request_thread.start()
+
+    try: 
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Shutting down load balancer")

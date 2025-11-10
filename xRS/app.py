@@ -20,7 +20,7 @@ xrs = services.xRSService(latency_rings_threshold)
 monitoring_thread = Thread(target=lms.monitor_loop, args=(30,), daemon=True)
 monitoring_thread.start()
 
-xrs_thread = Thread(target=xrs.monitor_loop, args=(lms, server_data, 5), daemon=True)
+xrs_thread = Thread(target=xrs.monitor_loop, args=(lms, server_data, 1), daemon=True)
 xrs_thread.start()
 
 @app.route('/report', methods=['POST'])
