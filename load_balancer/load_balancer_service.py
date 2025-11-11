@@ -108,10 +108,10 @@ class LoadBalancer:
 if __name__ == "__main__":
     lb = LoadBalancer()
     
-    update_thread = Thread(target=lb.update_loop, args=(1,), daemon=True)
+    update_thread = Thread(target=lb.update_loop, args=(10,), daemon=True)
     update_thread.start()
     
-    request_thread = Thread(target=lb.request_loop, args=(0.01,), daemon=True)
+    request_thread = Thread(target=lb.request_loop, args=(0.1,), daemon=True)
     request_thread.start()
 
     try: 
