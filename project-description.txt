@@ -49,3 +49,7 @@ notes:
 ssh to machine: $ ssh -i my-loadbalancer-key.pem ec2-user@54.90.177.6
 
 przetestować reportowanie loadu!!!
+sudo tc qdisc add dev ens5 root netem delay 25ms
+
+TODO:
+zasymulować bursting w loadbalancerze (normalny ruch -> średni ruch -> wysoki ruch -> normlany ruch)!!!
