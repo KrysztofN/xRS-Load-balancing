@@ -12,15 +12,19 @@ with open('config.json', 'r') as file:
 servers_config = data["Servers_config"]
 latency_rings_config =  data["Latency_rings_config"]
 latency_rings_threshold = data["Latency_rings_threshold"]
+latency_rings_threshold_down = data["Latency_rings_threshold_downscale"]
 xRS_url = data["xRS_url"]
 
+def get_server_data():
+    return server_data
+
 lms = services.LatencyMonitoringService(servers_config, latency_rings_config, xRS_url)
-xrs = services.xRSService(latency_rings_threshold)
+xrs = services.xRSService(latency_rings_threshold, latency_rings_threshold_down)
 
 monitoring_thread = Thread(target=lms.monitor_loop, args=(30,), daemon=True)
 monitoring_thread.start()
 
-xrs_thread = Thread(target=xrs.monitor_loop, args=(lms, server_data, 5), daemon=True)
+xrs_thread = Thread(target=xrs.monitor_loop, args=(lms, get_server_data, 1), daemon=True)
 xrs_thread.start()
 
 @app.route('/report', methods=['POST'])
@@ -52,6 +56,10 @@ def get_regions_load():
     latency_rings = lms.get_latency_rings()
     regions_load = xrs.calculate_ring_load(latency_rings, server_data)
     return jsonify(regions_load)
+
+@app.route('/state', methods=['GET'])
+def get_state():
+    return jsonify(xrs.get_current_state())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -4,7 +4,7 @@ import time
 import json
 
 def get_cpu_load():
-    return psutil.cpu_percent(interval=0.5)
+    return psutil.cpu_percent(interval=9)
 
 def report_to_xrs(cpu_load, xRS_url):
     payload = {

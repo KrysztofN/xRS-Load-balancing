@@ -1,14 +1,19 @@
 {
-    "Servers_config" : ["172.31.21.109", "172.31.38.253", "172.31.9.229", "172.31.83.105", "172.31.70.165"],
+    "Servers_config" : ["172.31.21.109", "172.31.9.229", "172.31.70.165", "172.31.38.253", "172.31.83.105"],
     "Latency_rings_config" : {
         "Ring1": 5,
         "Ring2": 35,
         "Ring3": 80
     },
-    "Latency_rings_threshold" : {
-        "Ring1": 2,
-        "Ring2": 5,
-        "Ring3": 8
+    "Latency_rings_threshold": {
+        "Ring1": 4,
+        "Ring2": 7,
+        "Ring3": 10
+    },
+    "Latency_rings_threshold_downscale": {
+        "Ring1": 1,
+        "Ring2": 3,
+        "Ring3": 6
     },
     "xRS_url" : "http://172.31.26.111:5000"
 }
